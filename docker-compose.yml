@@ -1,0 +1,65 @@
+version: '2'
+
+services:
+  db:
+    image: mysql:5.7
+    container_name: mysql
+    volumes:
+     - ./mysql-data/:/var/lib/mysql
+    restart: always
+    environment:
+     - MYSQL_ROOT_PASSWORD=cloud2023
+     - MYSQL_DATABASE=medidas
+     - MYSQL_ALLOW_EMPTY_PASSWORD=yes 
+    ports:
+     - 3306:3306 
+    networks:
+     - telemetry
+ 
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    environment:
+     - PMA_HOST=db
+     - MYSQL_ROOT_PASSWORD=root 
+    ports:
+     - 8080:80
+    networks:
+     - telemetry
+
+  grafana:
+    image: grafana/grafana:8.0.2
+    container_name: grafana
+    restart: always
+    ports:
+     - 3000:3000 
+    networks:
+     - telemetry
+
+  node-red:
+    image: nodered/node-red
+    container_name: node-red
+    restart: always
+    volumes:
+     - ./node_red_data:/data 
+    ports:
+     - 1880:1880 
+    networks:
+     - telemetry
+
+  miapp:
+    build: ./app
+    restart: always
+    ports:
+     - 80:5000 
+    networks:
+     - telemetry   
+  
+networks:
+  telemetry:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.238.0/24
+
